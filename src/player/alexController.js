@@ -72,23 +72,29 @@ export class AlexController {
             }
           });
 
-          // Medir tamanho natural do modelo
+          this.model.updateMatrixWorld(true);
           const bbox = new THREE.Box3().setFromObject(this.model);
           const size = bbox.getSize(new THREE.Vector3());
           const center = bbox.getCenter(new THREE.Vector3());
+          console.log('[AlexController] BBox Size original:', size, 'Center:', center);
 
-          // Escala proporcional aos Backrooms (altura alvo ~1.3 unidades)
-          const targetHeight = 1.35;
-          const scaleFactor = targetHeight / (size.y || 1);
+          // Escala proporcional aos Backrooms (altura alvo ~1.45 unidades)
+          const targetHeight = 1.45;
+          const scaleFactor = targetHeight / (size.y > 0 ? size.y : 1);
           this.model.scale.setScalar(scaleFactor);
-
-          // Centralizar os pés do Alex no pivô do animRig (y = 0)
-          this.model.position.x = -center.x * scaleFactor;
-          this.model.position.y = -bbox.min.y * scaleFactor;
-          this.model.position.z = -center.z * scaleFactor;
 
           // Adicionar o modelo ao rig de animação
           this.animRig.add(this.model);
+          this.model.position.set(0, 0, 0);
+          this.model.updateMatrixWorld(true);
+
+          // Ajustar para que o Alex fique com o corpo inteiro visível sobre o piso do carpete
+          this.model.position.y = 1.05;
+          this.model.position.x = 0;
+          this.model.position.z = 0;
+
+          this.root.updateMatrixWorld(true);
+          console.log('[AlexController] Alex ajustado sobre o piso:', this.model.position);
 
           // Configurar as 3 ações de animação
           this.animations = setupAlexAnimations(this.animRig);
@@ -217,6 +223,11 @@ export class AlexController {
 
       // Checar limites e aplicar movimento
       this.root.position.copy(nextPos);
+    }
+
+    // Manter Alex nivelado no piso do carpete (y = 0)
+    if (this.root.position.y < -3) {
+      this.root.position.copy(this.spawnPoint);
     }
 
     // Controle de estado de animação (Idle vs Walk vs Roar)

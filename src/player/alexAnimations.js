@@ -36,8 +36,8 @@ export function setupAlexAnimations(animRig) {
   ];
 
   const idleClip = new THREE.AnimationClip('idle', 2.0, [
-    new THREE.VectorKeyframeTrack(`${animRig.name}.position`, idleTimes, idlePosValues),
-    new THREE.QuaternionKeyframeTrack(`${animRig.name}.quaternion`, idleTimes, idleRotValues)
+    new THREE.VectorKeyframeTrack('.position', idleTimes, idlePosValues),
+    new THREE.QuaternionKeyframeTrack('.quaternion', idleTimes, idleRotValues)
   ]);
 
   // 2. ANIMAÇÃO WALK (0.7 segundos, passada rítmica)
@@ -59,8 +59,8 @@ export function setupAlexAnimations(animRig) {
   ];
 
   const walkClip = new THREE.AnimationClip('walk', 0.7, [
-    new THREE.VectorKeyframeTrack(`${animRig.name}.position`, walkTimes, walkPosValues),
-    new THREE.QuaternionKeyframeTrack(`${animRig.name}.quaternion`, walkTimes, walkRotValues)
+    new THREE.VectorKeyframeTrack('.position', walkTimes, walkPosValues),
+    new THREE.QuaternionKeyframeTrack('.quaternion', walkTimes, walkRotValues)
   ]);
 
   // 3. ANIMAÇÃO ROAR / JUMP (1.4 segundos, disparo especial)
@@ -84,8 +84,8 @@ export function setupAlexAnimations(animRig) {
   ];
 
   const roarClip = new THREE.AnimationClip('roar_jump', 1.4, [
-    new THREE.VectorKeyframeTrack(`${animRig.name}.position`, roarTimes, roarPosValues),
-    new THREE.QuaternionKeyframeTrack(`${animRig.name}.quaternion`, roarTimes, roarRotValues)
+    new THREE.VectorKeyframeTrack('.position', roarTimes, roarPosValues),
+    new THREE.QuaternionKeyframeTrack('.quaternion', roarTimes, roarRotValues)
   ]);
 
   // Configuração do AnimationMixer

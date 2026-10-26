@@ -54,10 +54,12 @@ export function loadBackroomsMap(scene, onProgress) {
         map.position.y = -bbox.min.y;
         map.position.z = -mapCenter.z;
 
+        // Adicionar o mapa dos Backrooms à cena
         scene.add(map);
+        map.updateMatrixWorld(true);
 
-        // Ponto de spawn inicial seguro nos corredores
-        const spawnPoint = new THREE.Vector3(0, 0, 0);
+        // Ponto de spawn inicial perfeitamente localizado no corredor dos Backrooms
+        const spawnPoint = new THREE.Vector3(1.5, 0, 0);
 
         resolve({
           mapGroup: map,
