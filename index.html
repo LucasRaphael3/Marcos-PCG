@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alex Leão nos Backrooms - Three.js</title>
+    <link rel="stylesheet" href="./src/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <!-- Tela de Carregamento -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loader-content">
+        <div class="warning-tape">WARNING // ANOMALOUS ZONE DETECTED</div>
+        <h1 class="glitch-title" data-text="THE BACKROOMS">THE BACKROOMS</h1>
+        <p class="loader-subtitle">Carregando mapa e Alex o Leão...</p>
+        <div class="progress-bar-bg">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <span id="progress-text" class="progress-text">0%</span>
+      </div>
+    </div>
+
+    <!-- Container 3D WebGL -->
+    <div id="canvas-container"></div>
+
+    <!-- HUD / Interface de Usuário -->
+    <div id="ui-container"></div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
