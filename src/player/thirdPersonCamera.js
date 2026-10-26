@@ -1,40 +1,49 @@
 import * as THREE from 'three';
 
 /**
- * Câmera suave em 3ª pessoa que acompanha o Alex.
- * Suporta rotação orbital com o mouse e amortecimento suave (lerp).
+ * Câmera em 3ª pessoa aprimorada para jogos.
+ * - Enquadramento dinâmico com visão sobre as costas/ombro do Alex.
+ * - Centralização automática suave quando o jogador se move.
+ * - Rotação orbital livre com o mouse e zoom por scroll.
+ * - Amortecimento elástico sem trepidação.
  */
 export class ThirdPersonCamera {
-  constructor(camera, targetObject, domElement) {
+  constructor(camera, targetObject, domElement, options = {}) {
     this.camera = camera;
     this.target = targetObject;
     this.domElement = domElement || document.body;
+    this.collidableMeshes = options.collidableMeshes || [];
 
-    // Configurações de posicionamento
-    this.distance = 3.6;
-    this.height = 1.6;
-    this.lookAtHeight = 0.9;
-    this.damping = 0.08;
+    // Enquadramento de jogo em 3ª pessoa
+    this.distance = 2.8;
+    this.minDistance = 1.2;
+    this.maxDistance = 5.0;
+    this.height = 1.35;
+    this.lookAtHeight = 0.95;
+    this.damping = 0.12;
 
     // Controles orbitais do mouse
-    this.yaw = 0; // Rotação horizontal adicional do mouse
-    this.pitch = 0.15; // Rotação vertical (ângulo de visão)
+    this.yaw = 0; // Offset horizontal do mouse
+    this.pitch = 0.12; // Ângulo vertical de inclinação
     this.isDragging = false;
     this.previousMousePosition = { x: 0, y: 0 };
+    this.mouseMovedRecently = false;
+    this.idleMouseTimer = 0;
 
-    // Posições interpoladas
+    // Vetores reutilizáveis
     this.currentPosition = new THREE.Vector3();
     this.currentLookAt = new THREE.Vector3();
+    this.raycaster = new THREE.Raycaster();
 
     this.setupMouseEvents();
   }
 
   setupMouseEvents() {
     this.domElement.addEventListener('mousedown', (e) => {
-      if (e.button === 0 || e.button === 2) {
-        this.isDragging = true;
-        this.previousMousePosition = { x: e.clientX, y: e.clientY };
-      }
+      this.isDragging = true;
+      this.mouseMovedRecently = true;
+      this.idleMouseTimer = 0;
+      this.previousMousePosition = { x: e.clientX, y: e.clientY };
     });
 
     window.addEventListener('mouseup', () => {
@@ -47,15 +56,18 @@ export class ThirdPersonCamera {
       const deltaX = e.clientX - this.previousMousePosition.x;
       const deltaY = e.clientY - this.previousMousePosition.y;
 
+      // Sensibilidade suave
       this.yaw -= deltaX * 0.005;
-      this.pitch = Math.max(-0.2, Math.min(0.65, this.pitch + deltaY * 0.004));
+      this.pitch = Math.max(-0.25, Math.min(0.7, this.pitch + deltaY * 0.004));
 
       this.previousMousePosition = { x: e.clientX, y: e.clientY };
+      this.mouseMovedRecently = true;
+      this.idleMouseTimer = 0;
     });
 
-    // Zoom com scroll do mouse
+    // Zoom fluido
     window.addEventListener('wheel', (e) => {
-      this.distance = Math.max(1.8, Math.min(6.5, this.distance + e.deltaY * 0.003));
+      this.distance = Math.max(this.minDistance, Math.min(this.maxDistance, this.distance + e.deltaY * 0.0025));
     }, { passive: true });
   }
 
@@ -65,13 +77,22 @@ export class ThirdPersonCamera {
     const targetPos = this.target.position;
     const targetRotY = this.target.rotation.y;
 
-    // Calcular ângulo global da câmera (orientação do personagem + yaw do mouse)
+    // Re-centralização suave da câmera atrás do personagem quando ele caminha
+    if (!this.isDragging) {
+      this.idleMouseTimer += delta;
+      if (this.idleMouseTimer > 1.2) {
+        this.yaw = THREE.MathUtils.lerp(this.yaw, 0, delta * 3.0);
+      }
+    }
+
+    // Calcular ângulo da câmera (visão traseira com offset)
     const totalYaw = targetRotY + this.yaw + Math.PI;
 
-    // Posição ideal da câmera em relação ao alvo
-    const offsetX = Math.sin(totalYaw) * this.distance * Math.cos(this.pitch);
+    // Posição desejada da câmera
+    const cosPitch = Math.cos(this.pitch);
+    const offsetX = Math.sin(totalYaw) * this.distance * cosPitch;
     const offsetY = this.height + Math.sin(this.pitch) * this.distance;
-    const offsetZ = Math.cos(totalYaw) * this.distance * Math.cos(this.pitch);
+    const offsetZ = Math.cos(totalYaw) * this.distance * cosPitch;
 
     const idealPosition = new THREE.Vector3(
       targetPos.x + offsetX,
@@ -79,14 +100,31 @@ export class ThirdPersonCamera {
       targetPos.z + offsetZ
     );
 
-    // Ponto onde a câmera deve mirar (altura dos olhos do Alex)
+    // Ponto focal da câmera (peito/cabeça do Alex)
     const idealLookAt = new THREE.Vector3(
       targetPos.x,
       targetPos.y + this.lookAtHeight,
       targetPos.z
     );
 
-    // Interpolação suave (lerp)
+    // Evitar que a câmera atravesse paredes dos Backrooms (Camera Wall Raycast)
+    if (this.collidableMeshes && this.collidableMeshes.length > 0) {
+      const dir = idealPosition.clone().sub(idealLookAt);
+      const camDist = dir.length();
+      dir.normalize();
+
+      this.raycaster.set(idealLookAt, dir);
+      this.raycaster.near = 0.1;
+      this.raycaster.far = camDist;
+
+      const hits = this.raycaster.intersectObjects(this.collidableMeshes, true);
+      if (hits.length > 0 && hits[0].distance < camDist) {
+        // Encurtar a distância da câmera para ficar na frente da parede
+        idealPosition.copy(hits[0].point).addScaledVector(dir, -0.2);
+      }
+    }
+
+    // Interpolação suave (lerp) para amortecer curvas
     if (this.currentPosition.lengthSq() === 0) {
       this.currentPosition.copy(idealPosition);
       this.currentLookAt.copy(idealLookAt);

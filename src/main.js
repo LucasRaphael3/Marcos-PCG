@@ -80,7 +80,8 @@ async function initApp() {
     const thirdPersonCamera = new ThirdPersonCamera(
       camera,
       alexController.getMesh(),
-      renderer.domElement
+      renderer.domElement,
+      { collidableMeshes: mapData.collidableMeshes }
     );
 
     // 10. Carregar Membros Secundários (se cadastrados)

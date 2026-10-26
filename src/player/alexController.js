@@ -96,8 +96,8 @@ export class AlexController {
           this.root.updateMatrixWorld(true);
           console.log('[AlexController] Alex ajustado sobre o piso:', this.model.position);
 
-          // Configurar as 3 ações de animação
-          this.animations = setupAlexAnimations(this.animRig);
+          // Configurar as 3 ações de animação esquelética (elimina T-pose)
+          this.animations = setupAlexAnimations(this.model, this.animRig);
 
           // Posicionar Alex no ponto de spawn inicial
           this.root.position.copy(this.spawnPoint);
