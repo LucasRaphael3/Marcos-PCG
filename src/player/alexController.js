@@ -101,7 +101,7 @@ export class AlexController {
 
           // Posicionar Alex no ponto de spawn inicial
           this.root.position.copy(this.spawnPoint);
-          this.root.rotation.y = Math.PI; // Olhando para frente no corredor
+          this.root.rotation.y = Math.PI; // Olhando para a frente no corredor dos Backrooms
 
           resolve(this);
         },
