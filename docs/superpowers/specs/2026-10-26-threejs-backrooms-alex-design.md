@@ -2,7 +2,7 @@
 
 **Data:** 2026-10-26  
 **Status:** Aprovado para Planejamento  
-**Autor:** Antigravity AI & Marcos  
+**Autor:** Lucas Raphael
 
 ---
 
