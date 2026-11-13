@@ -188,6 +188,12 @@ export class AlexController {
     }
   }
 
+  /** Mantém uma animação tocando parado (teclas 1/2 do HUD) até o jogador se mover. */
+  previewAction(name) {
+    if (name === 'roar_jump') return this.triggerRoarJump();
+    this.previewedAction = name;
+  }
+
   update(delta) {
     if (!this.animations) return;
 
@@ -231,12 +237,19 @@ export class AlexController {
     }
 
     // Controle de estado de animação (Idle vs Walk vs Roar)
+    const moving = this.isMoving || rotationDelta !== 0;
+    if (moving) this.previewedAction = null; // movimento real cancela a pré-visualização (teclas 1/2)
+
+    // Cadência da passada acompanha a velocidade (correr / ré)
+    const cadence = this.isMoving ? this.currentSpeed / this.speed : 0.8;
+    this.animations.setWalkSpeed(Math.max(0.6, cadence) * (moveDirection < 0 ? -1 : 1));
+
     const currentAction = this.animations.getCurrentActionName();
     if (currentAction !== 'roar_jump') {
-      if (this.isMoving || rotationDelta !== 0) {
+      if (moving) {
         this.animations.playAction('walk');
       } else {
-        this.animations.playAction('idle');
+        this.animations.playAction(this.previewedAction || 'idle');
       }
     }
 

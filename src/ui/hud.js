@@ -14,6 +14,8 @@ export function createHUD(container, controller) {
         <div class="telemetry-card">
           <div class="telemetry-label">Velocidade Atual</div>
           <div id="telemetry-speed" class="telemetry-value">0.0 u/s</div>
+          <div class="telemetry-label">Animação</div>
+          <div id="telemetry-action" class="telemetry-value">idle</div>
         </div>
       </div>
 
@@ -35,6 +37,10 @@ export function createHUD(container, controller) {
             <span>Rugido / Salto</span>
           </div>
           <div class="key-row">
+            <span class="key-cap">1</span><span class="key-cap">2</span><span class="key-cap">3</span>
+            <span>Idle / Andar / Rugido</span>
+          </div>
+          <div class="key-row">
             <span class="key-cap">MOUSE</span>
             <span>Arrastar para girar câmera</span>
           </div>
@@ -44,22 +50,27 @@ export function createHUD(container, controller) {
   `;
 
   const speedElement = document.getElementById('telemetry-speed');
+  const actionElement = document.getElementById('telemetry-action');
+  const actionLabels = { idle: 'idle', walk: 'andar', roar_jump: 'rugido' };
 
   // Teclas numéricas opcionais 1, 2, 3 para acionar animações
   window.addEventListener('keydown', (e) => {
     if (e.key === '1') {
-      controller.animations?.playAction('idle');
+      controller.previewAction('idle');
     } else if (e.key === '2') {
-      controller.animations?.playAction('walk');
+      controller.previewAction('walk');
     } else if (e.key === '3') {
       controller.triggerRoarJump();
     }
   });
 
   return {
-    update(speed) {
+    update(speed, actionName) {
       if (speedElement) {
         speedElement.textContent = `${speed.toFixed(1)} u/s`;
+      }
+      if (actionElement && actionName) {
+        actionElement.textContent = actionLabels[actionName] || actionName;
       }
     },
     hideLoadingScreen() {
